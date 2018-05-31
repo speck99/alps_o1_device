@@ -1,0 +1,181 @@
+type hal_swfingerprint_hwservice, hwservice_manager_type;
+type sw_fpserver_data_file, file_type, data_file_type;
+
+#add this type trans
+file_type_auto_trans(hal_fpserver, system_data_file, sw_fpserver_data_file)
+
+
+# HwBinder IPC from client to server, and callbacks
+binder_call(hal_fpserver_client, hal_fpserver_server)
+binder_call(hal_fingerprint_default, hal_fpserver_client)
+
+#add_hwservice(hal_fpserver_server, hal_swfingerprint_hwservice)
+add_hwservice(hal_fingerprint_default, hal_swfingerprint_hwservice)
+allow hal_fpserver_client hal_swfingerprint_hwservice:hwservice_manager find;
+
+# allow HAL module to read dir contents
+allow hal_fpserver sw_fpserver_data_file:file create_file_perms;
+
+# allow HAL module to read/write/unlink contents of this dir
+allow hal_fpserver sw_fpserver_data_file:dir rw_dir_perms;
+
+# For memory allocation
+allow hal_fpserver ion_device:chr_file r_file_perms;
+
+r_dir_file(hal_fpserver, cgroup)
+r_dir_file(hal_fpserver, sysfs)
+
+type fpserver, domain;
+#type fpserver_exec, exec_type, file_type;
+type fpserver_exec, exec_type, vendor_file_type, file_type;
+init_daemon_domain(fpserver)
+hal_server_domain(fpserver, hal_fpserver)
+
+allow fpserver fingerprintd_data_file:dir { search write add_name };
+allow fpserver fingerprintd_data_file:file { getattr read write open };
+
+#type sunwave_data_file, file_type, data_file_type;
+#type fpserver_exec, exec_type, file_type;
+#r_dir_file(fpserver, sunwave_data_file)
+#allow fpserver sunwave_data_file:dir ra_dir_perms;
+#allow fpserver sunwave_data_file:file create_file_perms;
+#init_daemon_domain(fpserver)
+
+type fpserver_service,vndservice_manager_type;
+type sunwave_device, dev_type;
+
+typeattribute fpserver mlstrustedsubject;
+#typeattribute fpserver binder_in_vendor_violators;
+
+vndbinder_use(fpserver)
+hwbinder_use(fpserver)
+#hwbinder_use(hal_fingerprint_default)
+vndbinder_use(hal_fingerprint_default)
+
+
+
+binder_call(fpserver, binderservicedomain)
+
+binder_call(fpserver, hal_fingerprint_default)
+binder_call(hal_fingerprint_default, fpserver)
+binder_call(hal_fingerprint_default, binderservicedomain)
+#binder_call(hal_fingerprint_default, appdomain)
+binder_call(platform_app, hal_swfingerprint_hwservice)
+binder_call(hal_swfingerprint_hwservice,platform_app)
+binder_call(platform_app, fpserver)
+binder_call(fpserver, platform_app)
+
+binder_call(hal_fingerprint_default, platform_app);
+binder_call(platform_app, hal_fingerprint_default);
+
+allow servicemanager fpserver:dir{search};
+allow servicemanager fpserver:file { read open };
+allow servicemanager fpserver:process {getattr};
+
+#allow fpserver binder_device:chr_file {read write open ioctl};
+#allow fpserver self:netlink_kobject_uevent_socket { read};
+allow fpserver fpserver:netlink_kobject_uevent_socket { create setopt bind write read };
+allow fpserver self:netlink_kobject_uevent_socket { create setopt bind read };
+
+
+r_dir_file(fpserver, sdcard_type)
+
+
+
+allow fpserver self:process execmem;
+allow fpserver kernel:system module_request;
+allow fpserver sdcard_type:file write;
+allow fpserver fuse:dir create_dir_perms;
+allow fpserver fuse:file create_file_perms;
+allow fpserver self:capability { dac_override dac_read_search };
+
+allow fpserver fpserver_service:service_manager add;
+
+
+allow fpserver sunwave_device:chr_file { open read write ioctl rw_file_perms};
+#allow system_server sunwave_device:chr_file {open read write ioctl };
+
+allow fpserver sw_fpserver_data_file:dir { create setattr open read search remove_name add_name };
+allow fpserver sw_fpserver_data_file:file { create open write read getattr };
+
+
+#allow fpserver system_data_file:dir create_dir_perms;
+#allow fpserver system_data_file:file create_file_perms;
+
+#allow fpserver system_file:file {read open execute_no_trans execute};
+#allow fpserver shell_exec:file { read open execute_no_trans execute };
+#allow fpserver app_data_file:dir {read write open ioctl execute search getattr add_name create_dir_perms};
+#allow fpserver app_data_file:file {read write open ioctl create_file_perms};
+allow fpserver apk_data_file:file {read write open ioctl create_file_perms};
+allow fpserver apk_data_file:dir {read write open ioctl execute search getattr add_name create_dir_perms};
+
+allow fpserver fpserver:netlink_socket {create bind connect listen accept write read setopt getopt getattr };
+#allow fpserver fpserver:netlink_route_socket { create_socket_perms nlmsg_read nlmsg_write create ioctl bind };
+#allow fpserver fpserver:udp_socket { create ioctl bind };
+#allow fpserver fpserver:tcp_socket { create ioctl bind };
+#allow fpserver fpserver:packet_socket { create ioctl bind};
+allow fpserver ueventd:dir search;
+allow fpserver ueventd:file { create write read open };
+allow fpserver block_device:dir { search };
+#allow fpserver mmcblk_device:blk_file { open read write rw_file_perms};
+allow fpserver untrusted_app:process { signull };
+
+
+allow fpserver fpserver_service:service_manager find;
+
+
+
+#binder_call(fingerprintd, appdomain)
+#binder_service(fingerprintd)
+#allow fingerprintd fpserver:binder call;
+
+# Need to add auth tokens to KeyStore
+#use_keystore(fpserver)
+#allow fpserver keystore:keystore_key { add_auth };
+
+
+
+# allow fingerprintd_data_file
+#allow fpserver fingerprintd_data_file:file { create_file_perms rw_file_perms create open };
+#allow fpserver fingerprintd_data_file:chr_file { rw_file_perms setattr };
+#r_dir_file(fpserver, fingerprintd_data_file)
+#allow fpserver fingerprintd_data_file:dir { ra_dir_perms r_dir_perms remove_name create setattr };
+#allow fpserver fingerprintd_data_file:dir { create setattr };
+
+
+
+allow servicemanager fpserver:dir { search };
+allow servicemanager fpserver:file { open read write };
+allow servicemanager fpserver:process { getattr };
+
+
+
+
+allow fpserver hwbinder_device:chr_file {read write open ioctl};
+allow fpserver vndbinder_device:chr_file {read write open ioctl};
+
+typeattribute hal_fingerprint_default mlstrustedsubject;
+
+
+
+
+
+allow hal_fingerprint_default fpserver_service:service_manager { find };
+
+#allow hal_fingerprint_default default_android_vndservice:service_manager find ;
+#allow platform_app default_android_hwservice:hwservice_manager find ;
+
+allow hal_fingerprint_default vndbinder_device:chr_file { open read write ioctl };
+
+allow hal_fingerprint_default vndservicemanager:binder { call };
+
+allow vndservicemanager hal_fingerprint_default:dir search ;
+allow vndservicemanager hal_fingerprint_default:file {open read  } ;
+allow vndservicemanager hal_fingerprint_default:process getattr;
+
+allow hal_fingerprint_default fpserver_service:service_manager   find;
+
+allow platform_app hal_swfingerprint_hwservice:service_manager   find;
+allow platform_app hal_swfingerprint_hwservice:hwservice_manager find ;
+
+#allow vendor_app hal_swfingerprint_hwservice:hwservice_manager find ;

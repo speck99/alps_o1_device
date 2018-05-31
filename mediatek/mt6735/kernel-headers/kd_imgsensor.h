@@ -1,0 +1,1 @@
+../../../../kernel-3.18/drivers/misc/mediatek/imgsensor/inc/kd_imgsensor.h

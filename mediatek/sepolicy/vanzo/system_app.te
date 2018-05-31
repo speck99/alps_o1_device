@@ -1,0 +1,9 @@
+# ==============================================
+# Vanzo Policy Rule
+# ==============================================
+
+allow system_app sw_sync_device:chr_file { read write getattr open ioctl };
+# fmtest
+allow system_app fm_device:chr_file {open read write ioctl };
+# trustkernel
+allow system_app tkcore_admin_device:chr_file { read write getattr open ioctl };

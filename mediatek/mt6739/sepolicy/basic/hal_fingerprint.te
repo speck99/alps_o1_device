@@ -1,0 +1,10 @@
+allow hal_fingerprint_default tee_device:chr_file { read write open ioctl };
+allow hal_fingerprint_default mafinger_device:chr_file { read write open ioctl };
+allow hal_fingerprint_default ma_data_file:file create_file_perms;
+
+#add blestech fingerprint
+allow hal_fingerprint_default hal_fingerprint_hwservice:hwservice_manager find;
+allow hal_fingerprint_default self:netlink_socket { read bind create write getattr setopt };
+allow hal_fingerprint_default blestech_fp_device:chr_file rw_file_perms;
+allow hal_fingerprint_default tkcore_log_file:file {open append read write };
+allow hal_fingerprint_default tkcore_admin_device:chr_file {open ioctl read write };

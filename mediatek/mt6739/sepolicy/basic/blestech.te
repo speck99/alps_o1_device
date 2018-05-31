@@ -1,0 +1,26 @@
+# blestech
+
+
+#blesttech fingerprint
+type blestech_fp_device, dev_type;
+
+# priv_app.te
+allow priv_app blestech_fp_device:file { create_file_perms };
+allow priv_app blestech_fp_device:chr_file { rw_file_perms setattr };
+allow priv_app blestech_fp_device:chr_file { getattr open read ioctl lock append write };
+
+# system_app.te
+binder_call(system_app, hal_fingerprint)
+allow system_app hal_fingerprint_hwservice:hwservice_manager find;
+allow system_app blestech_fp_device:file { create_file_perms };
+allow system_app blestech_fp_device:chr_file { rw_file_perms setattr };
+allow system_app blestech_fp_device:chr_file { getattr open read ioctl lock append write };
+
+#platform_app.te
+
+binder_call(platform_app, hal_fingerprint)
+allow platform_app hal_fingerprint_hwservice:hwservice_manager find;
+
+allow platform_app blestech_fp_device:file { create_file_perms };
+allow platform_app blestech_fp_device:chr_file { rw_file_perms setattr };
+allow platform_app blestech_fp_device:chr_file { getattr open read ioctl lock append write };
